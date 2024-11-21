@@ -46,6 +46,7 @@ function generateActivationToken(user) {
   const token = jwt.sign(
     {
       email: user.email,
+      password: user.password,
       activationCode,
     },
     process.env.SECRET_KEY,

@@ -177,19 +177,6 @@ router.delete(
   })
 );
 
-//Delete more users
-router.post(
-  "/more",
-  CatchAsyncError(async (req, res, next) => {
-    try {
-      const response = await User.deleteMany({ _id: { $in: req.body } });
-      res.status(201).json(response);
-    } catch (error) {
-      next(new Errors(error.message, 400));
-    }
-  })
-);
-
 // import users
 router.post(
   "/import",
@@ -211,7 +198,6 @@ router.post(
             B: "lastName",
             C: "email",
             D: "telephone",
-            E: "password",
           },
         });
 

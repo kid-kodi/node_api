@@ -50,16 +50,16 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    isTeacher: {
+    isAccountSet: {
       type: Boolean,
       default: false,
     },
     role: {
       type: String,
       enum: {
-        values: ["FORMATEUR", "ADMINISTRATEUR"],
+        values: ["AGENT", "ADMINISTRATEUR"],
       },
-      default: "ADMINISTRATEUR",
+      default: "AGENT",
     },
     tokens: [
       {

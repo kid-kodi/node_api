@@ -6,6 +6,8 @@ const Errors = require("../helpers/Errors");
 const sendMail = require("../helpers/email");
 const CatchAsyncError = require("../helpers/CatchAsyncError");
 
+const bcrypt = require("bcryptjs");
+
 // User sign-up
 router.post("/register", async (req, res, next) => {
   try {
@@ -19,11 +21,10 @@ router.post("/register", async (req, res, next) => {
     let data = { user, activationCode: activation.activationCode };
     await sendMail({
       to: user.email,
-      subject: "Activation du compte invoice92.",
+      subject: "Activation du compte.",
       template: "activation-mail.ejs",
       data,
     });
-    // await Email.sendVerificationEmail(user, req.get("origin"));
     res.status(201).json({
       success: true,
       message: `Please check your mail : ${user.email}, to activate your account`,
@@ -51,9 +52,9 @@ router.post(
       return next(new Errors("Cette adresse exist déjà", 400));
     }
 
-    const { email } = token;
+    const { email, password } = token;
 
-    let user = new User({ email });
+    let user = new User({ email, password });
     await user.save();
 
     const access_token = user.signAccessToken();
@@ -78,56 +79,25 @@ router.post("/login", async (req, res, next) => {
     if (!user) {
       return next(new Errors("Cette adresse n'existe pas!", 400));
     }
-    const activation = Utility.generateActivationToken(user);
-    let data = { user, activationCode: activation.activationCode };
-    await sendMail({
-      to: user.email,
-      subject: "Verification du compte.",
-      template: "activation-mail.ejs",
-      data,
-    });
-    // await Email.sendVerificationEmail(user, req.get("origin"));
+
+    const isValid = await bcrypt.compare(password, user.password);
+
+    if (!isValid) {
+      return next(
+        new Errors("Les informations renseignées sont invalides!", 400)
+      );
+    }
+
+    const access_token = user.signAccessToken();
     res.status(201).json({
       success: true,
-      message: `Please check your mail : ${user.email}, to activate your account`,
-      activationToken: activation.token,
+      message: `Authentification reussit!`,
+      token: access_token,
     });
   } catch (error) {
     next(error);
   }
 });
-
-// ACTIVATE ACCOUNT
-router.post(
-  "/verify",
-  CatchAsyncError(async (req, res, next) => {
-    const { activation_token, activation_code } = req.body;
-    
-    const token = Utility.verifyActivationToken(activation_token);
-
-    if (token.activationCode !== activation_code) {
-      return next(new Errors("Activation code invalide!", 400));
-    }
-
-    const user = await User.findOne({ email: token.email });
-    if (!user) {
-      return next(new Errors("Cette adresse n'existe pas", 400));
-    }
-
-    const access_token = user.signAccessToken();
-
-    res.status(200).json({
-      success: true,
-      user,
-      token: access_token,
-    });
-
-    try {
-    } catch (error) {
-      next(new Errors(error.message, 400));
-    }
-  })
-);
 
 // User logout
 router.post("/logout", auth, async (req, res, next) => {
@@ -154,11 +124,11 @@ router.get(
 
 // Update user's profile
 router.put(
-  "/me/update",
+  "/me",
   auth,
   CatchAsyncError(async (req, res, next) => {
     try {
-      const user = await User.findByIdAndUpdate(req.user.id, req.body, {
+      const user = await User.findByIdAndUpdate(req.user._id, req.body, {
         new: true,
       });
 
@@ -187,7 +157,7 @@ router.post(
 
       await sendMail({
         to: user.email,
-        subject: "Changer de mot de passe invoice92.",
+        subject: "Changer de mot de passe.",
         template: "password-reset-mail.ejs",
         data: { user },
       });
@@ -217,13 +187,11 @@ router.post(
         return next(new Errors("aucun utilisateur trouvé", 400));
       }
 
-      // update password and remove reset token
-      // user.password = req.body.password;
-      // user.resetToken = undefined;
+      user.resetToken = undefined;
       await user.save();
       res.status(200).send({
         success: true,
-        token: user.resetToken.token,
+        user,
         message:
           "Réinitialisation du mot de passe réussie, vous pouvez maintenant vous connecter",
       });
@@ -232,15 +200,13 @@ router.post(
     }
   })
 );
+
 // RESET PASSWORD
 router.post(
   "/reset-password",
   CatchAsyncError(async (req, res, next) => {
     try {
-      const user = await User.findOne({
-        "resetToken.token": req.body.token,
-        "resetToken.expires": { $gt: Date.now() },
-      });
+      const user = await User.findById(req.body.userId);
 
       if (!user) {
         return next(new Errors("aucun utilisateur trouvé", 400));
@@ -250,6 +216,7 @@ router.post(
       user.password = req.body.password;
       user.resetToken = undefined;
       await user.save();
+
       res.status(200).send({
         success: true,
         message:
