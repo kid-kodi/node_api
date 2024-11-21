@@ -3,7 +3,7 @@ const path = require("path");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const maxSize = 10 * 1024 * 1024; // 10MB
+const maxSize = 5000 * 1024 * 1024; // 10MB
 
 // Image config
 const imageMsgFileStorage = multer.diskStorage({
@@ -16,7 +16,7 @@ const imageMsgFileStorage = multer.diskStorage({
 const uploadImage = multer({
   storage: imageMsgFileStorage,
   limits: { fileSize: maxSize },
-}).single("imageMsg");
+}).single("image");
 
 // Image config
 const otherFileStorage = multer.diskStorage({

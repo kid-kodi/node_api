@@ -31,6 +31,7 @@ router.post("/register", async (req, res, next) => {
       activationToken: activation.token,
     });
   } catch (error) {
+    
     next(new Errors(error.message, 400));
   }
 });
