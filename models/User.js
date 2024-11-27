@@ -38,6 +38,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    
     followers: {
       type: Array,
       default: [],
@@ -45,6 +46,15 @@ const userSchema = new mongoose.Schema(
     followers: {
       type: Array,
       default: [],
+    },
+    online: {
+      type: Boolean,
+      default: false,
+    },
+    lastSeen: { type: Date },
+    fcmToken: {
+      type: String,
+      default: "",
     },
     isAdmin: {
       type: Boolean,

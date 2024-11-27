@@ -81,7 +81,7 @@ router.post("/login", async (req, res, next) => {
       return next(new Errors("Cette adresse n'existe pas!", 400));
     }
 
-    const isValid = await bcrypt.compare(password, user.password);
+    const isValid = await bcrypt.compare(req.body.password, user.password);
 
     if (!isValid) {
       return next(
@@ -94,9 +94,11 @@ router.post("/login", async (req, res, next) => {
       success: true,
       message: `Authentification reussit!`,
       token: access_token,
+      user
     });
   } catch (error) {
-    next(error);
+    console.log(error)
+    return next(new Errors(error.message, 400));
   }
 });
 
@@ -105,7 +107,7 @@ router.post("/logout", auth, async (req, res, next) => {
   try {
     res.status(200).json({ success: true, message: "Déconnexion successful" });
   } catch (e) {
-    next(error);
+    return next(new Errors(error.message, 400));
   }
 });
 
@@ -115,7 +117,7 @@ router.get(
   auth,
   CatchAsyncError(async (req, res, next) => {
     try {
-      const user = await User.findById(req.user.id);
+      const user = await User.findById(req.user._id);
       res.status(200).json({ success: true, user });
     } catch (error) {
       return next(new Errors(error.message, 400));

@@ -6,16 +6,19 @@ const excelToJson = require("convert-excel-to-json");
 const Errors = require("../helpers/Errors");
 const CatchAsyncError = require("../helpers/CatchAsyncError");
 
+const auth = require("../middleware/auth");
+
 // CREATE A USER
-// URL : http://localhost:5000/users
-// METHOD : POST
-// REQUEST : { email, telephone, password }
+// URL      : http://localhost:5000/users
+// METHOD   : POST
+// REQUEST  : { email, telephone, password }
 // RESPONSE SUCCESS
 // RESPONSE : STATUS - 201
 // RESPONSE ERROR
 // RESPONSE : STATUS - 401
 router.post(
   "/",
+  auth,
   CatchAsyncError(async (req, res, next) => {
     try {
       const user = new User(req.body);
@@ -120,6 +123,7 @@ router.get(
 // RESPONSE : STATUS - 401
 router.put(
   "/:userId",
+  auth,
   CatchAsyncError(async (req, res, next) => {
     try {
       const user = await User.findByIdAndUpdate(req.params.userId, req.body, {
@@ -144,6 +148,7 @@ router.put(
 // RESPONSE : STATUS - 401
 router.post(
   "/more",
+  auth,
   CatchAsyncError(async (req, res, next) => {
     try {
       console.log(req.body);
@@ -165,6 +170,7 @@ router.post(
 // RESPONSE : STATUS - 401
 router.delete(
   "/:id",
+  auth,
   CatchAsyncError(async (req, res, next) => {
     try {
       const user = await User.findByIdAndDelete(req.params.id);
@@ -180,6 +186,7 @@ router.delete(
 // import users
 router.post(
   "/import",
+  auth,
   CatchAsyncError(async (req, res, next) => {
     try {
       let form = new formidable.IncomingForm();

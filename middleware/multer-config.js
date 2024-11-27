@@ -16,7 +16,7 @@ const imageMsgFileStorage = multer.diskStorage({
 const uploadImage = multer({
   storage: imageMsgFileStorage,
   limits: { fileSize: maxSize },
-}).single("image");
+}).single("file");
 
 // Image config
 const otherFileStorage = multer.diskStorage({
