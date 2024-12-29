@@ -11,6 +11,7 @@ const ErrorHandler = require("../middleware/ErrorHandler");
 //Load public routes
 const authRoutes = require("../routes/auth");
 const usersRoutes = require("../routes/users");
+const customersRoutes = require("../routes/customers");
 const chatsRoutes = require("../routes/chats");
 const messagesRoutes = require("../routes/messages");
 const filesRoutes = require("../routes/files");
@@ -42,6 +43,7 @@ app.use(morgan("common"));
 // Public api
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
+app.use("/api/customers", customersRoutes);
 app.use("/api/chats", chatsRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/files", filesRoutes);

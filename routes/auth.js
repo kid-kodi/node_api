@@ -31,7 +31,6 @@ router.post("/register", async (req, res, next) => {
       activationToken: activation.token,
     });
   } catch (error) {
-    
     next(new Errors(error.message, 400));
   }
 });
@@ -53,9 +52,11 @@ router.post(
       return next(new Errors("Cette adresse exist déjà", 400));
     }
 
-    const { email, password } = token;
+    const { firstName, lastName, email, password } = token;
 
-    let user = new User({ email, password });
+    const fullName = `${firstName} ${lastName}`;
+
+    let user = new User({ firstName, lastName, fullName, email, password });
     await user.save();
 
     const access_token = user.signAccessToken();
@@ -94,10 +95,10 @@ router.post("/login", async (req, res, next) => {
       success: true,
       message: `Authentification reussit!`,
       token: access_token,
-      user
+      user,
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return next(new Errors(error.message, 400));
   }
 });

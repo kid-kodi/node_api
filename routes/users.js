@@ -5,6 +5,7 @@ const formidable = require("formidable");
 const excelToJson = require("convert-excel-to-json");
 const Errors = require("../helpers/Errors");
 const CatchAsyncError = require("../helpers/CatchAsyncError");
+const bcrypt = require("bcryptjs");
 
 const auth = require("../middleware/auth");
 
@@ -21,10 +22,15 @@ router.post(
   auth,
   CatchAsyncError(async (req, res, next) => {
     try {
+
+      if(req.body.password === ""){
+        delete req.body.password;
+      }
+
       const user = new User(req.body);
       user.fullName = `${req.body.firstName} ${req.body.lastName}`;
       const response = await user.save();
-      res.status(201).json({ success: true, data: response });
+      res.status(201).json({ success: true, user: response });
     } catch (error) {
       next(new Errors(error.message, 400));
     }
@@ -62,7 +68,7 @@ router.get(
         .skip(pageSize * (page - 1))
         .sort("-updatedAt");
 
-      res.send({ users, page, pages });
+      res.send({ success: true, users, page, pages });
     } catch (error) {
       next(new Errors(error.message, 400));
     }
@@ -106,7 +112,7 @@ router.get(
       const user = await User.findById(req.params.id).select(
         "_id profilePicture initials fullName firstName lastName email telephone role createdAt"
       );
-      res.status(201).json({ success : true, user});
+      res.status(201).json({ success: true, user });
     } catch (error) {
       next(new Errors(error.message, 400));
     }
@@ -126,6 +132,13 @@ router.put(
   auth,
   CatchAsyncError(async (req, res, next) => {
     try {
+      if(req.body.password === ""){
+        console.log(req.body)
+        delete req.body.password;
+      }
+      else{
+        req.body.password = await bcrypt.hash(req.body.password, 8);
+      }
       const user = await User.findByIdAndUpdate(req.params.userId, req.body, {
         new: true,
       });

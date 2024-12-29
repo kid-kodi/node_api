@@ -45,6 +45,8 @@ function generateActivationToken(user) {
   const activationCode = Math.floor(1000 + Math.random() * 9000).toString();
   const token = jwt.sign(
     {
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
       password: user.password,
       activationCode,
